@@ -32,8 +32,15 @@ class SpecialMosttranscludedimages extends QueryPage {
 	}
 
 	public function getQueryInfo() {
-        // select il_from,il_from_namespace,count(*) AS Cnt FROM imagelinks GROUP BY il_from  ORDER BY Cnt DESC;
-        // Probably problems with this; see comments at end
+        // Query this tries to duplicate: 
+	// SELECT page_namespace, page_title, count(*) 
+	//	FROM imagelinks 
+	// 	JOIN page ON page_id=il_from 
+	// 	GROUP BY page_title
+	//	ORDER BY count(*)
+	//	DESC;
+
+// Probably problems with this; see comments at end
 
 		return array(
 			'tables' => array( 'imagelinks', 'page' ),
@@ -101,9 +108,11 @@ class SpecialMosttranscludedimages extends QueryPage {
 
 	#FIXME
 		/*
-		return var_dump( $result );
+		replacing the return statement above with
 
-		/* This yields the following at the top of the page: 
+			return var_dump( $result );
+
+		yields the following at the top of the page: 
 
 object(stdClass)#573 (3) { ["namespace"]=> string(1) "0" 
                         ["title"]=> string(9) "Main_Page" 
@@ -115,9 +124,17 @@ object(stdClass)#580 (3) { ["namespace"]=> string(1) "0"
                         ["title"]=> string(9) "Main_Page" 
                         ["value"]=> string(2) "14" }
 
-		On my vagrant-backed wiki on localhost, there should be three entries.
-		One should have 3 images, one 2, one 1, and only one of these
-		pages is Main_Page. Problem with the query?
+But when I query the database directly:
+
+(21:19) root@localhost:[wiki]> select page_namespace, page_title, count(*) from imagelinks join page on page_id=il_from group by page_title order by count(*) desc;
++----------------+----------------------------+----------+
+| page_namespace | page_title                 | count(*) |
++----------------+----------------------------+----------+
+|              0 | Page_with_lots_of_images   |        3 |
+|              0 | Page_with_lots_more_images |        2 |
+|              0 | Main_Page                  |        1 |
++----------------+----------------------------+----------+
+
+Problem with the query?
 		*/
-//	}
 }
