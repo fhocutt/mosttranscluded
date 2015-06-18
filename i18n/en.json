@@ -5,5 +5,5 @@
 	"mosttranscludedimages-desc": "This extension creates a SpecialPage that lists the pages with the largest numbers of transcluded images.",
 	"mosttranscludedimages-i18n-welcome": "Welcome to the localization file of the MostTranscludedImages extension.",
         "mosttranscludedimages": "Pages with the most transcluded images",
-	"nimages": " images"
+	"nimages": "$1 {{PLURAL:$1|image|images}}"
 }

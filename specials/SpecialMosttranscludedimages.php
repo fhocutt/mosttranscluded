@@ -33,7 +33,7 @@ class SpecialMosttranscludedimages extends QueryPage {
 
 	public function getQueryInfo() {
         // select il_from,il_from_namespace,count(*) AS Cnt FROM imagelinks GROUP BY il_from  ORDER BY Cnt DESC;
-        // it's super slow though
+        // Probably problems with this; see comments at end
 
 		return array(
 			'tables' => array( 'imagelinks', 'page' ),
@@ -48,40 +48,76 @@ class SpecialMosttranscludedimages extends QueryPage {
 		);
 	}
 
-	#TODO
 	public function getOrderFields() {
-		return array(  ); //the thing I want it sorted by; number of images transcluded on a page
+		return array( 'value' ); //sort by count
 	}
 
 	#TODO
 	# I'm taking this from SpecialMostcategories.php, also SpecialMostinterwikis
 	# see: https://doc.wikimedia.org/mediawiki-core/master/php/SpecialMostcategories_8php_source.html
-/*
+	# How does this work? What's the deal with it? Obviously involves DB,
+	# cache, some sort of batch processing.
 	public function preprocessResults( $db, $res ) {
-		# ask about this! cacheing etc.
+		if( !$this->isCached() || !$res->numRows() ) {
+			return;
+		}
 
+		$batch = new LinkBatch();
 		foreach( $res as $row ) {
-			batch->add(  );
+			$batch->add( $row->namespace, $row->title );
 		}
-	}
-*/
-	#TODO
-	public function formatResult( $skin, $result ) {  //overrides the one in QueryPage
-	# ok I think this is making the title safely??
-		if ( !$result ) {
-			return 'eggs';
-		}
-		$title = Title::makeTitleSafe( $result->namespace, $result->title );
-		# it'll return falsey if it can't put that together for some reason, handle that
+		$batch->execute();
 
-		# you're making a Link for each Title using the Linker class?
-		# dun dun dunnnnn!
-#		$link = Linker::link( $title );
-#		$count = this->msg( 'nimages' )->numParams( $result->value )->escaped();
-#		$resulttoreturn = this->getLanguage()->specialList( $link, $count );
-		# IT BREAKS HERE
-#		return $resulttoreturn;
-		# yeah, this is making sense actually! ok cool. you have to make count htmlsafe, hence all the escaping stuff
-		return 'spam';
+		$res->seek( 0 );
 	}
+
+
+
+	//Nabbed from SpecialMostcategories.php with a different message
+	function formatResult( $skin, $result ) {
+		$title = Title::makeTitleSafe( $result->namespace, $result->title );
+		if ( !$title ) {
+			return Html::element(
+				'span',
+				array( 'class' => 'mw-invalidtitle' ),
+				Linker::getInvalidTitleDescription(
+					$this->getContext(),
+					$result->namespace,
+					$result->title
+				)
+			);
+		}
+
+		if ( $this->isCached() ) {
+			$link = Linker::link( $title );
+		} else {
+			$link = Linker::linkKnown( $title );
+		}
+ 
+		$count = $this->msg( 'nimages' )->numParams( $result->value )->escaped();
+ 
+		return $this->getLanguage()->specialList( $link, $count );
+	}
+
+	#FIXME
+		/*
+		return var_dump( $result );
+
+		/* This yields the following at the top of the page: 
+
+object(stdClass)#573 (3) { ["namespace"]=> string(1) "0" 
+                        ["title"]=> string(9) "Main_Page" 
+                        ["value"]=> string(1) "7" }
+object(stdClass)#579 (3) { ["namespace"]=> string(1) "0" 
+                        ["title"]=> string(9) "Main_Page" 
+                        ["value"]=> string(2) "21" }
+object(stdClass)#580 (3) { ["namespace"]=> string(1) "0" 
+                        ["title"]=> string(9) "Main_Page" 
+                        ["value"]=> string(2) "14" }
+
+		On my vagrant-backed wiki on localhost, there should be three entries.
+		One should have 3 images, one 2, one 1, and only one of these
+		pages is Main_Page. Problem with the query?
+		*/
+//	}
 }
