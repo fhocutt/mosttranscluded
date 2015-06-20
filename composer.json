@@ -1,4 +1,7 @@
 {
+	"name": "mediawiki/most-transcluded-images",
+	"license": "GPL-2.0+",
+	"require": {},
 	"require-dev": {
 		"jakub-onderka/php-parallel-lint": "0.8.*",
 		"mediawiki/mediawiki-codesniffer": "0.2.0"

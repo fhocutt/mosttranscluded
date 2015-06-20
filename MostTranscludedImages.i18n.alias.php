@@ -1,6 +1,6 @@
 <?php
 /**
- * Aliases for special pages of the BoilerPlate extension
+ * Aliases for the special page of the MostTranscludedImages extension.
  *
  * @file
  * @ingroup Extensions
@@ -10,5 +10,5 @@ $specialPageAliases = array();
 
 /** English (English) */
 $specialPageAliases['en'] = array(
-	'MostTranscludedImages' => array( 'Most Transcluded Images' ),
+	'MostTranscludedImages' => array('MostTranscludedImages', 'Most Transcluded Images'),
 );
